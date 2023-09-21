@@ -22,7 +22,9 @@ import br.com.generic.base.data.extensions.userExhibitionName
 import br.com.generic.base.databinding.ActivityMainBinding
 import br.com.generic.base.ui.activities.settings.SettingsActivity
 import com.squareup.picasso.Picasso
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
