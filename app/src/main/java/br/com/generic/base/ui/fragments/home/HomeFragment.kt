@@ -12,6 +12,7 @@ import br.com.generic.base.R
 import br.com.generic.base.data.extensions.cookie
 import br.com.generic.base.data.extensions.createQuestionDialog
 import br.com.generic.base.data.extensions.loginFailed
+import br.com.generic.base.data.extensions.serverURL
 import br.com.generic.base.data.extensions.userConnectionCode
 import br.com.generic.base.data.extensions.userExhibitionName
 import br.com.generic.base.databinding.FragmentHomeBinding
@@ -38,7 +39,6 @@ class HomeFragment : Fragment() {
     private lateinit var fragmentAdapter : HomeAdapter
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private var serverUrl = ""
     private var sessionId = ""
     private var logoutSession = ""
     private var getView = ""
@@ -53,7 +53,7 @@ class HomeFragment : Fragment() {
         // Controla a ação do botão de voltar para sair do app fazendo logoff da sessão aberta
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                createQuestionDialog(requireContext(), "Sair do App", "Deseja sair do monitor?") { result ->
+                createQuestionDialog(requireContext(), "Sair do App", "Deseja realmente sair?") { result ->
                     if (result) {
                         exiting = true
                         binding.srlHome.isRefreshing = false
@@ -92,7 +92,7 @@ class HomeFragment : Fragment() {
         // Verifica se o servidor foi preenchido e se retornou corretamente chama a função de preencher as constantes
         fragmentViewModel.serverData.observe(viewLifecycleOwner) { serverData ->
             if (serverData.serverData.isNotEmpty()) {
-                serverUrl = serverData.serverData
+                serverURL = serverData.serverData
                 setConstants()
             }
         }
@@ -156,9 +156,9 @@ class HomeFragment : Fragment() {
 
     // Define as constantes dessa etapa
     private fun setConstants() {
-        sessionId = serverUrl + SESSION_ID
-        logoutSession = serverUrl + EXIT_SESSION
-        getView = serverUrl + GET_QUERY
+        sessionId = serverURL + SESSION_ID
+        logoutSession = serverURL + EXIT_SESSION
+        getView = serverURL + GET_QUERY
         viewArray = ArrayList()
 
         viewArray.add(ViewFieldName("CODUSU"))

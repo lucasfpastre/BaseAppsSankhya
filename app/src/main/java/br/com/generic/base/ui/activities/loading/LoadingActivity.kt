@@ -8,6 +8,7 @@ import br.com.generic.base.R
 import br.com.generic.base.data.extensions.cookie
 import br.com.generic.base.data.extensions.getUserQuery
 import br.com.generic.base.data.extensions.loginFailed
+import br.com.generic.base.data.extensions.serverURL
 import br.com.generic.base.data.extensions.userCode
 import br.com.generic.base.data.extensions.userConnectionCode
 import br.com.generic.base.data.extensions.userExhibitionName
@@ -33,7 +34,6 @@ class LoadingActivity : AppCompatActivity()  {
 
     private val binding by lazy { ActivityLoadingBinding.inflate(layoutInflater)}
     private val loadingViewModel: LoadingViewModel by viewModels()
-    private var serverUrl = ""
     private var sessionId = ""
     private var getView = ""
     private var userArray = ArrayList<ViewFieldName>()
@@ -55,7 +55,7 @@ class LoadingActivity : AppCompatActivity()  {
         // Verifica se o servidor foi preenchido e se retornou corretamente chama a função de preencher as constantes
         loadingViewModel.serverData.observe(this) { serverData ->
             if (serverData.serverData.isNotEmpty()) {
-                serverUrl = serverData.serverData
+                serverURL = serverData.serverData
                 setConstants()
             }
         }
@@ -130,8 +130,8 @@ class LoadingActivity : AppCompatActivity()  {
 
     // Defino as constantes dessa etapa
     private fun setConstants() {
-        sessionId = serverUrl + SESSION_ID
-        getView = serverUrl + GET_QUERY
+        sessionId = serverURL + SESSION_ID
+        getView = serverURL + GET_QUERY
 
         userArray.add(ViewFieldName("CODUSU"))
         userArray.add(ViewFieldName("NOMEUSU"))

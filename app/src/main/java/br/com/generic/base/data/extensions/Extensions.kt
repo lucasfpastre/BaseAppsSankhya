@@ -61,6 +61,6 @@ fun getUserQuery() : String {
     return "CODUSU = STP_GET_CODUSULOGADO"
 }
 
-fun loadUserLogo(userCode: String) : String {
-    return "${serverURL}Usuario@FOTO@CODUSU=$userCode.dbimage"
+fun loadUserLogo(server: String, userCode: String): String {
+    return "${server}Usuario@FOTO@CODUSU=$userCode.dbimage"
 }

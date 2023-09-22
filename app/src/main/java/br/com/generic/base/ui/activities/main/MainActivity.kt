@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -17,6 +18,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import br.com.generic.base.R
 import br.com.generic.base.data.extensions.loadUserLogo
+import br.com.generic.base.data.extensions.serverURL
 import br.com.generic.base.data.extensions.userCode
 import br.com.generic.base.data.extensions.userExhibitionName
 import br.com.generic.base.databinding.ActivityMainBinding
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private val mainViewModel : MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +61,15 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main, menu)
         val userLogo : ImageView = findViewById(R.id.ivUserLogo)
         val userName : TextView = findViewById(R.id.tvUserName)
-        Picasso.get().load(loadUserLogo(userCode)).resize(60,75).into(userLogo)
         userName.text = userExhibitionName
+
+        mainViewModel.serverData.observe(this) {serverData ->
+            if (serverData.serverData.isNotEmpty()) {
+                serverURL = serverData.serverData
+                Picasso.get().load(loadUserLogo(serverURL,userCode)).resize(60,75).into(userLogo)
+            }
+        }
+
         return true
     }
 
