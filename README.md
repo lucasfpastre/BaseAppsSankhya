@@ -33,4 +33,4 @@
 >
 >[LifeCycle](https://developer.android.com/topic/libraries/architecture/lifecycle)
 
-Esse código não é um requisito para criação de apps, ele é uma base para quem interesse em fazer e não tem ideia de como começar.
+Esse código não é um requisito para criação de apps, ele é uma base para quem tem interesse em fazer e não tem ideia de como começar.
