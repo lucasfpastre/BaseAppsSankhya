@@ -10,6 +10,15 @@
 
 >Para uma completa funcionalidade do app, utilizo a biblioteca do Retrofit2 para conexão com o servidor e coleta dos dados em formato json, o Room para salvar alguns dados de maneira local, o Hilt para injeção de dependência e o Picasso para manipulação de imagens, além das bibliotecas padrões do Android.
 
+
+<table><tr>
+<td><img src="https://github.com/lucasfpastre/ImageRepository/blob/main/Base/Base_Tela_Login.png" width=300 alt="Imagem da tela inicial do aplicativo exibindo usuário, senha, botão para configurar o servidor e uma chave para gravar o usuário ou não" title="Tela de Login" border=/></td>
+<td><img src="https://github.com/lucasfpastre/ImageRepository/blob/main/Base/Base_Tela_Inicial_Teste.png" width=300 alt="Tela inicial exibindo o usuário Teste" title="Tela Inicial"/></td>
+<td><img src="https://github.com/lucasfpastre/ImageRepository/blob/main/Base/Base_Tela_Inicial_Lucas.png" width=300 alt="Tela inicial exibindo o usuário Lucas Pastre" title="Tela Inicial"/></td>
+<td><img src="https://github.com/lucasfpastre/ImageRepository/blob/main/Base/Base_Tela_Inicial_Menu.png" width=300 alt="Tela inicial exibindo o menu com opções: Home, Gallery e Slideshow, e uma foto do usuário conectado, Lucas Pastre e sua foto" title="Menu do App"/></td>
+<td><img src="https://github.com/lucasfpastre/ImageRepository/blob/main/Base/Base_Tela_Configurações.png" width=300 alt="Tela de configurações com um botão de voltar" title="Tela de Configurações"/></td>
+</tr></table>
+
 ### Links para as Bibliotecas
 
 >[Retrofit2](https://square.github.io/retrofit/)
