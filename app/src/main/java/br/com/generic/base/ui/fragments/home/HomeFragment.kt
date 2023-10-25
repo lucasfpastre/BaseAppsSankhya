@@ -16,6 +16,14 @@ import br.com.generic.base.data.extensions.serverURL
 import br.com.generic.base.data.extensions.userConnectionCode
 import br.com.generic.base.data.extensions.userExhibitionName
 import br.com.generic.base.databinding.FragmentHomeBinding
+import br.com.generic.base.models.procedure.request.ProcedureBody
+import br.com.generic.base.models.procedure.request.ProcedureCall
+import br.com.generic.base.models.procedure.request.ProcedureFields
+import br.com.generic.base.models.procedure.request.ProcedureParam
+import br.com.generic.base.models.procedure.request.ProcedureParams
+import br.com.generic.base.models.procedure.request.ProcedureRequestBody
+import br.com.generic.base.models.procedure.request.ProcedureRow
+import br.com.generic.base.models.procedure.request.ProcedureRows
 import br.com.generic.base.models.service.request.LoginCode
 import br.com.generic.base.models.service.request.LoginConnection
 import br.com.generic.base.models.service.request.LoginUser
@@ -28,6 +36,7 @@ import br.com.generic.base.models.view.request.ViewRequest
 import br.com.generic.base.models.view.request.ViewRequestBody
 import br.com.generic.base.utils.Constants.Companion.EXIT_SESSION
 import br.com.generic.base.utils.Constants.Companion.GET_QUERY
+import br.com.generic.base.utils.Constants.Companion.GET_STP
 import br.com.generic.base.utils.Constants.Companion.SESSION_ID
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,6 +51,7 @@ class HomeFragment : Fragment() {
     private var sessionId = ""
     private var logoutSession = ""
     private var getView = ""
+    private var getProcedure = ""
     private var viewArray = ArrayList<ViewFieldName>()
     private var viewFields = ViewFields(viewArray)
     private var updating = false
@@ -89,6 +99,10 @@ class HomeFragment : Fragment() {
             }
         }
 
+        binding.btCallProcedure.setOnClickListener {
+            callProcedure()
+        }
+
         // Verifica se o servidor foi preenchido e se retornou corretamente chama a função de preencher as constantes
         fragmentViewModel.serverData.observe(viewLifecycleOwner) { serverData ->
             if (serverData.serverData.isNotEmpty()) {
@@ -129,6 +143,7 @@ class HomeFragment : Fragment() {
             }
         }
 
+        // Em caso de falha de conexão, limpo os dados
         fragmentViewModel.connectionFailure.observe(viewLifecycleOwner) {
             if (it) {
                 showSnackBar(fragmentViewModel.failureMessage)
@@ -138,17 +153,26 @@ class HomeFragment : Fragment() {
             }
         }
 
+        // Em caso de resposta positiva de logout fecho a aplicação
         fragmentViewModel.logoutStatus.observe(viewLifecycleOwner) {
             if (it) {
                 requireActivity().finishAffinity()
             }
         }
 
+        // Ao retornar uma resposta positiva da chamada da view, retorno os dados
         fragmentViewModel.fragmentViewLoaded.observe(viewLifecycleOwner) {
             if (it) {
                 binding.srlHome.isRefreshing = false
                 updating = false
                 fragmentAdapter.setUpItems(fragmentViewModel.viewArray)
+            }
+        }
+
+        // Em caso de retorno positivo da procedure, exibo a mensagem de retorno
+        fragmentViewModel.procedureReturn.observe(viewLifecycleOwner) {
+            if (it) {
+                showSnackBar(fragmentViewModel.procedureResponse.value.toString())
             }
         }
     }
@@ -159,6 +183,7 @@ class HomeFragment : Fragment() {
         sessionId = serverURL + SESSION_ID
         logoutSession = serverURL + EXIT_SESSION
         getView = serverURL + GET_QUERY
+        getProcedure = serverURL + GET_STP
         viewArray = ArrayList()
 
         viewArray.add(ViewFieldName("CODUSU"))
@@ -168,11 +193,12 @@ class HomeFragment : Fragment() {
         getViewData()
     }
 
-    //
+    // Carrego o recycler view
     private fun setUpRecyclerView() {
         binding.rvHome.adapter = fragmentAdapter
     }
 
+    // Preparo a chamada da view
     private fun getViewData() {
         if (!exiting) {
             val serviceName = "CRUDServiceProvider.loadView"
@@ -184,6 +210,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // Chamada de login caso o token expire
     private fun loginUser() {
         val bodyData = ServiceBody(LoginUser(userExhibitionName), LoginCode(userConnectionCode), LoginConnection("S"))
         val serviceRequest = ServiceRequest("MobileLoginSP.login",bodyData)
@@ -192,12 +219,26 @@ class HomeFragment : Fragment() {
         loginFailed = ""
     }
 
+    // Preparo a chamada da procedure
+    private fun callProcedure() {
+        val procedureParam = ProcedureParam("T","NOME_PARAMETRO", "VALOR_PARAMETRO")
+        val procedureParams = ProcedureParams(arrayListOf(procedureParam))
+        val procedureFields = ProcedureFields("NOME_CAMPO","VALOR_CAMPO")
+        val procedureRows = ProcedureRows(arrayListOf(ProcedureRow(arrayListOf(procedureFields))))
+        val procedureCall = ProcedureCall("999","NOME_DA_PROCEDURE","NOME_TABELA_BANCO","NONE",procedureRows,procedureParams)
+        val procedureRequestBody = ProcedureRequestBody(procedureCall)
+        val procedureBody = ProcedureBody("ActionButtonsSP.executeSTP",procedureRequestBody)
+        fragmentViewModel.procedureCall(procedureBody, getProcedure, cookie)
+    }
+
+    // Função para fazer logoff
     private fun logoutUser() {
         val bodyData = ServiceBody(LoginUser(userExhibitionName), LoginCode(userConnectionCode), LoginConnection("N"))
         val serviceRequest = ServiceRequest("MobileLoginSP.logout", bodyData)
         fragmentViewModel.logoutSession(serviceRequest, logoutSession, cookie)
     }
 
+    // Exibe uma mensagem em tela
     private fun showSnackBar(message: String) {
         fragmentViewModel.timerJob?.cancel()
         if (message.isNotEmpty()) {
@@ -205,6 +246,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // Destrói a view
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

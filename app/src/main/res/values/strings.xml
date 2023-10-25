@@ -29,4 +29,5 @@
     <string name="menu_slideshow">Slideshow</string>
     <string name="text_server_hint">Servidor deve ter o formato http://seu_servidor/mge/ ou https://seu_servidor/mge/</string>
     <string name="text_back">Voltar</string>
+    <string name="text_call_procedure">Chamar Procedure</string>
 </resources>
