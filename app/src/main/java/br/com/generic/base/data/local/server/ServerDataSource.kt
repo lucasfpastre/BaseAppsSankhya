@@ -4,6 +4,7 @@ import br.com.generic.base.models.server.ServerData
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
+// Fornece os dados para serem usados pelo Hilt para injeção
 class ServerDataSource @Inject constructor(
     private val serverDao: ServerDao
 ) {

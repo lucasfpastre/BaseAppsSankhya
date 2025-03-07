@@ -40,6 +40,7 @@ import br.com.generic.base.utils.Constants.Companion.GET_STP
 import br.com.generic.base.utils.Constants.Companion.SESSION_ID
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import java.lang.reflect.Array
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -60,7 +61,9 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Controla a ação do botão de voltar para sair do app fazendo logoff da sessão aberta
+        /**
+         * Controla a ação do botão de voltar para sair do app fazendo logoff da sessão aberta
+         */
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 createQuestionDialog(requireContext(), "Sair do App", "Deseja realmente sair?") { result ->
@@ -87,23 +90,40 @@ class HomeFragment : Fragment() {
 
         // Insere os observadores
         insertListeners()
-        setUpRecyclerView()
+        insertObservers()
+        binding.rvHome.adapter = fragmentAdapter
     }
 
-    // Controle dos observadores da etapa
+    /**
+     * Insere os observadores de botões, gestos e ações de tela
+     */
     private fun insertListeners() {
 
+        /**
+         * Controle do gesto de recarregar
+         */
         binding.srlHome.setOnRefreshListener {
             if (!updating && !exiting) {
                 getViewData()
             }
         }
 
+        /**
+         * Controle do botão de chamar procedure
+         */
         binding.btCallProcedure.setOnClickListener {
             callProcedure()
         }
+    }
 
-        // Verifica se o servidor foi preenchido e se retornou corretamente chama a função de preencher as constantes
+    /**
+     * Insere observadores de variáveis assíncronas
+     */
+    private fun insertObservers() {
+
+        /**
+         * Verifica se carregou os dados da API para fazer as chamadas
+         */
         fragmentViewModel.serverData.observe(viewLifecycleOwner) { serverData ->
             if (serverData.serverData.isNotEmpty()) {
                 serverURL = serverData.serverData
@@ -111,7 +131,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Chama a requisição da view novamente ao refazer o login
+        /**
+         * Se carregou a API o status avisa que devem ser inicializadas as constantes do programa para utilizar as rotinas
+         */
         fragmentViewModel.requestStatus.observe(viewLifecycleOwner) {
             if (it) {
                 if (fragmentViewModel.responseData.length == 55) {
@@ -124,7 +146,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Se a conexão cair, inicio o timer e tento uma reconexão
+        /**
+         * Verifica se caiu e a conexão é reinicia
+         */
         fragmentViewModel.connectionStatusDown.observe(viewLifecycleOwner) {
             if (it) {
                 showSnackBar("Reiniciando conexão, aguarde...")
@@ -134,7 +158,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Reinicio o timer se não houve resposta no tempo determinado
+        /**
+         * Reinicio o timer se não houve resposta no tempo determinado
+         */
         fragmentViewModel.timerStatus.observe(viewLifecycleOwner) {
             if (it) {
                 showSnackBar(getString(R.string.text_wait_timer))
@@ -143,7 +169,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Em caso de falha de conexão, limpo os dados
+        /**
+         * Verifica se falhou a conexão
+         */
         fragmentViewModel.connectionFailure.observe(viewLifecycleOwner) {
             if (it) {
                 showSnackBar(fragmentViewModel.failureMessage)
@@ -153,14 +181,18 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Em caso de resposta positiva de logout fecho a aplicação
+        /**
+         * Verifica se o usuário foi desconectado do servidor para sair do app
+         */
         fragmentViewModel.logoutStatus.observe(viewLifecycleOwner) {
             if (it) {
                 requireActivity().finishAffinity()
             }
         }
 
-        // Ao retornar uma resposta positiva da chamada da view, retorno os dados
+        /**
+         * Ao retornar uma resposta positiva da chamada da view, retorno os dados
+         */
         fragmentViewModel.fragmentViewLoaded.observe(viewLifecycleOwner) {
             if (it) {
                 binding.srlHome.isRefreshing = false
@@ -169,7 +201,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Em caso de retorno positivo da procedure, exibo a mensagem de retorno
+        /**
+         * Em caso de retorno positivo da procedure, exibo a mensagem de retorno
+         */
         fragmentViewModel.procedureReturn.observe(viewLifecycleOwner) {
             if (it) {
                 showSnackBar(fragmentViewModel.procedureResponse.value.toString())
@@ -178,7 +212,9 @@ class HomeFragment : Fragment() {
     }
 
 
-    // Define as constantes dessa etapa
+    /**
+     * Define as constantes da rotina
+     */
     private fun setConstants() {
         sessionId = serverURL + SESSION_ID
         logoutSession = serverURL + EXIT_SESSION
@@ -193,12 +229,9 @@ class HomeFragment : Fragment() {
         getViewData()
     }
 
-    // Carrego o recycler view
-    private fun setUpRecyclerView() {
-        binding.rvHome.adapter = fragmentAdapter
-    }
-
-    // Preparo a chamada da view
+    /**
+     * Preparo a chamada da view
+     */
     private fun getViewData() {
         if (!exiting) {
             val serviceName = "CRUDServiceProvider.loadView"
@@ -210,7 +243,9 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // Chamada de login caso o token expire
+    /**
+     * Função que faz a chamada de login de usuário
+     */
     private fun loginUser() {
         val bodyData = ServiceBody(LoginUser(userExhibitionName), LoginCode(userConnectionCode), LoginConnection("S"))
         val serviceRequest = ServiceRequest("MobileLoginSP.login",bodyData)
@@ -219,26 +254,36 @@ class HomeFragment : Fragment() {
         loginFailed = ""
     }
 
-    // Preparo a chamada da procedure
+    /**
+     * Preparo a chamada da procedure
+     */
     private fun callProcedure() {
-        val procedureParam = ProcedureParam("T","NOME_PARAMETRO", "VALOR_PARAMETRO")
-        val procedureParams = ProcedureParams(arrayListOf(procedureParam))
-        val procedureFields = ProcedureFields("NOME_CAMPO","VALOR_CAMPO")
+        val procedureParam = arrayListOf<ProcedureParam>()
+        procedureParam.add(ProcedureParam("I","PARAMETROINT", "1"))
+        procedureParam.add(ProcedureParam("T","PARAMETROTEXTO","TEXTO"))
+        val procedureParams = ProcedureParams(procedureParam)
+        val procedureFields = ProcedureFields("CAMPOTABELA","1")
         val procedureRows = ProcedureRows(arrayListOf(ProcedureRow(arrayListOf(procedureFields))))
-        val procedureCall = ProcedureCall("999","NOME_DA_PROCEDURE","NOME_TABELA_BANCO","NONE",procedureRows,procedureParams)
+        val procedureCall = ProcedureCall("NUMERO PROCEDURE","NOME_PROCEDURE","NOMETABELA","NONE",procedureRows,procedureParams)
         val procedureRequestBody = ProcedureRequestBody(procedureCall)
         val procedureBody = ProcedureBody("ActionButtonsSP.executeSTP",procedureRequestBody)
         fragmentViewModel.procedureCall(procedureBody, getProcedure, cookie)
     }
 
-    // Função para fazer logoff
+    /**
+     * Função que faz a chamada de logout do usuário
+     */
     private fun logoutUser() {
         val bodyData = ServiceBody(LoginUser(userExhibitionName), LoginCode(userConnectionCode), LoginConnection("N"))
         val serviceRequest = ServiceRequest("MobileLoginSP.logout", bodyData)
         fragmentViewModel.logoutSession(serviceRequest, logoutSession, cookie)
     }
 
-    // Exibe uma mensagem em tela
+    /**
+     * Exibe mensagem em tela
+     * @param message
+     * @return Exibe mensagem na tela como snack bar
+     */
     private fun showSnackBar(message: String) {
         fragmentViewModel.timerJob?.cancel()
         if (message.isNotEmpty()) {
@@ -246,7 +291,9 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // Destrói a view
+    /**
+     * Destrói a view para liberar memória
+     */
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -26,10 +26,17 @@ class LoginViewModel @Inject constructor(private val requestRepo : RequestReposi
     val passwordFilled = MutableLiveData(false)
     val loadedServerData = MutableLiveData(false)
 
+    /**
+     * Função da chamada assíncrona de validação da url
+     */
     fun redirectUrl(url: String? ) {
         getRedirectUrl(url)
     }
 
+    /**
+     * Validação da url
+     * @param url URL a ser validada
+     */
     private fun getRedirectUrl(url: String?) = viewModelScope.launch(Dispatchers.IO) {
         var urlTmp: URL? = null
         var redUrl: String? = ""
@@ -54,6 +61,10 @@ class LoginViewModel @Inject constructor(private val requestRepo : RequestReposi
         saveServerData(redUrl)
     }
 
+    /**
+     * Verifica se grava ou atualiza o servidor no banco local
+     * @param serverName String com o servidor a ser salvo
+     */
     private fun saveServerData(serverName: String) {
         if (loadedServerData.value == true) {
             updateServerData(serverName)
@@ -62,20 +73,36 @@ class LoginViewModel @Inject constructor(private val requestRepo : RequestReposi
         }
     }
 
+    /**
+     * Atualiza o servidor no banco local
+     * @param serverName String com o servidor novo
+     */
     private fun updateServerData(serverName: String) = viewModelScope.launch(Dispatchers.IO) {
         requestRepo.server.updateServerData(serverName)
     }
 
+    /**
+     * Grava o servidor no banco local
+     * @param serverName String com o servidor novo
+     */
     private fun saveNewServerData(serverName: String) = viewModelScope.launch(Dispatchers.IO) {
         val newServerData = ServerData(1,serverName)
         requestRepo.server.insertServer(newServerData)
     }
 
+    /**
+     * Faz a chamada assíncrona de salvar o usuário no servidor local e prepara o objeto a ser salvo
+     * @param monitorUserName nome do usuário a ser salvo
+     */
     fun saveUserName(monitorUserName: String) {
         val newMonitorUser = RecordedUserData(1,monitorUserName)
         insertNewUserName(newMonitorUser)
     }
 
+    /**
+     * Grava o usuário no banco local
+     * @param monitorUserData Objeto com o usuário a ser gravado
+     */
     private fun insertNewUserName(monitorUserData : RecordedUserData) = viewModelScope.launch(Dispatchers.IO) {
         requestRepo.recordedUser.insertUser(monitorUserData)
     }

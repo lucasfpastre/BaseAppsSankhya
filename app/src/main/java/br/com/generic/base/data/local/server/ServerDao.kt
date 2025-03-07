@@ -10,12 +10,15 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ServerDao {
 
+    // Insere dado no banco
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertServer(serverData: ServerData)
 
+    // Atualiza servidor
     @Query("UPDATE server_database SET serverData = :newServer WHERE serverId = 1")
     suspend fun updateServerData(newServer : String)
 
+    // Busca dado do servidor
     @Query("SELECT * FROM server_database WHERE serverId = 1")
     fun getServer(): Flow<ServerData>
 

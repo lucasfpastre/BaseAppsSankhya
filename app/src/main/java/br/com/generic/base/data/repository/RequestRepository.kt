@@ -6,6 +6,7 @@ import br.com.generic.base.data.remote.RemoteDataSource
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import javax.inject.Inject
 
+// Repositório para facilitar distribuição das funções
 @ActivityRetainedScoped
 class RequestRepository @Inject constructor(
     remoteDataSource: RemoteDataSource,

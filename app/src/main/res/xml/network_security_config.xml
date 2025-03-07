@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">sankhya.com.br</domain>
+        <trust-anchors>
+            <certificates src="@raw/appcert" />
+            <certificates src="@raw/appcert_old" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

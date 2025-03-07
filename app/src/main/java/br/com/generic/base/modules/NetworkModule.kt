@@ -53,12 +53,14 @@ object NetworkModule {
         return logging
     }
 
+    // Serializador e Deserializador de Json
     @Singleton
     @Provides
     fun provideConverterFactory(): GsonConverterFactory {
         return GsonConverterFactory.create()
     }
 
+    // Instância do retrofit para conexão com API
     @Singleton
     @Provides
     fun provideRetrofitInstance(
@@ -77,6 +79,7 @@ object NetworkModule {
             .build()
     }
 
+    // Ligação da instância do retrofit com API
     @Singleton
     @Provides
     fun provideApiService(retrofit: Retrofit): SankhyaApi {

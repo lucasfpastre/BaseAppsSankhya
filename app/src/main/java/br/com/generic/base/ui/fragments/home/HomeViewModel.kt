@@ -53,7 +53,12 @@ class HomeViewModel @Inject constructor(private val requestRepo : RequestReposit
     var failureMessage : String = ""
     var timerJob: Job? = null
 
-    // Requisição de Login
+    /**
+     * Função que faz o login do usuário quando ele desconecta
+     * @param serviceRequest Classe com as informações necessárias
+     * @param newUrl Url personalizada para realizar o login
+     * @return Retorna sucesso ou falha a depender do retorno do servidor
+     */
     fun getSessionId(serviceRequest: ServiceRequest, newUrl: String) {
         requestRepo.remote.getSessionId(serviceRequest, newUrl).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
@@ -79,7 +84,13 @@ class HomeViewModel @Inject constructor(private val requestRepo : RequestReposit
         })
     }
 
-    // Chamada assíncrona da view
+    /**
+     * Função que faz a chamada que verifica as liberações do usuário
+     * @param viewRequest Classe com as informações para realizar a chamada
+     * @param newUrl Url personalizada para chamada de view
+     * @param cookie Chave de acesso que permite fazer as requisições ao servidor
+     * @return Retorna as liberações do usuário ou desconecta em caso de bloqueio
+     */
     fun getViewData(viewRequest: ViewRequest, newUrl: String, cookie: String) {
         requestRepo.remote.getViewData(viewRequest, newUrl, cookie).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
@@ -117,7 +128,13 @@ class HomeViewModel @Inject constructor(private val requestRepo : RequestReposit
         })
     }
 
-    // Chamada da procedure e retorno
+    /**
+     * Função que faz a chamada de procedures
+     * @param procedureBody Classe com as informações para realizar a chamada
+     * @param newUrl Url personalizada para chamada de view
+     * @param cookie Chave de acesso que permite fazer as requisições ao servidor
+     * @return Retorna o resultado da procedure
+     */
     fun procedureCall(procedureBody: ProcedureBody, newUrl: String, cookie: String) {
         requestRepo.remote.callProcedure(procedureBody, newUrl, cookie).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
@@ -146,6 +163,13 @@ class HomeViewModel @Inject constructor(private val requestRepo : RequestReposit
         })
     }
 
+    /**
+     * Função que desconecta o usuário
+     * @param serviceRequest Classe com as informações necessárias
+     * @param newUrl Url personalizada para realizar o logout
+     * @param cookie Chave de acesso que vai ser desconectada
+     * @return Retorna sucesso ou falha a depender do retorno do servidor
+     */
     fun logoutSession(serviceRequest: ServiceRequest, newUrl: String, cookie: String) {
         requestRepo.remote.logoutSession(serviceRequest, newUrl, cookie).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
@@ -161,7 +185,9 @@ class HomeViewModel @Inject constructor(private val requestRepo : RequestReposit
         })
     }
 
-    // Timer para verificar tempo de resposta
+    /**
+     * Função que roda um timer para tentativas de conexão
+     */
     fun startTimer() {
         timerJob = viewModelScope.launch {
             delay(15000)

@@ -2,6 +2,7 @@ package br.com.generic.base.ui.activities.loading
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import br.com.generic.base.R
@@ -43,16 +44,21 @@ class LoadingActivity : AppCompatActivity()  {
 
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        enableEdgeToEdge()
 
-        insertListeners()
+        insertObservers()
         binding.tvViewResponse.text = getString(R.string.text_wait_validation)
 
     }
 
-    // Insere os observadores para continuar o programa conforme as etapas são completadas
-    private fun insertListeners() {
+    /**
+     * Controle dos observadores de funções assíncronas
+     */
+    private fun insertObservers() {
 
-        // Verifica se o servidor foi preenchido e se retornou corretamente chama a função de preencher as constantes
+        /**
+         * Verifica se carregou os dados da API para fazer as chamadas
+         */
         loadingViewModel.serverData.observe(this) { serverData ->
             if (serverData.serverData.isNotEmpty()) {
                 serverURL = serverData.serverData
@@ -60,7 +66,9 @@ class LoadingActivity : AppCompatActivity()  {
             }
         }
 
-        // Se conseguiu a conexão com o servidor, chama a view para puxar os dados do usuário e validar se a chave é válida
+        /**
+         * Se carregou a API o status avisa que devem ser inicializadas as constantes do programa para utilizar as rotinas
+         */
         loadingViewModel.requestStatus.observe(this) {connectionStatus ->
             if (connectionStatus) {
                 if (loadingViewModel.responseData.length == 55) {
@@ -72,7 +80,9 @@ class LoadingActivity : AppCompatActivity()  {
             }
         }
 
-        // Se tiver uma resposta positiva do servidor, preencho as constantes do programa para exibição dos dados do usuário
+        /**
+         * Verifica se a view retornou e atribui as variáveis globais com os dados do usuário
+         */
         loadingViewModel.viewResponseStatus.observe(this) {viewResponse ->
             if (viewResponse) {
                 if (loadingViewModel.userResponseNames.value?.userCode?.viewField?.isNotEmpty() == true) {
@@ -91,7 +101,9 @@ class LoadingActivity : AppCompatActivity()  {
             }
         }
 
-        // Se tudo estiver correto, inicio a parte funcional da aplicação
+        /**
+         * Inicia a parte operacional da aplicação
+         */
         loadingViewModel.startApplication.observe(this) {
             if (it) {
                 val intent = Intent(this, MainActivity::class.java)
@@ -100,7 +112,9 @@ class LoadingActivity : AppCompatActivity()  {
             }
         }
 
-        // Se a conexão cair, inicio o timer e tento uma reconexão
+        /**
+         * Verifica se houve erro na conexão e tenta novamente
+         */
         loadingViewModel.connectionStatusDown.observe(this) {
             if (it) {
                 showSnackBar("Reiniciando Conexão, aguarde...")
@@ -109,16 +123,20 @@ class LoadingActivity : AppCompatActivity()  {
             }
         }
 
-        // Se o usuário ou senha estiver incorreto retorna a tela inicial
+        /**
+         * Se o usuário ou a senha estiverem incorretos exibo o erro por 5 segundos antes de retornar à tela inicial
+         */
         loadingViewModel.connectionFailure.observe(this) {
             if (it) {
                 binding.ivViewResponse.setImageResource(R.drawable.ic_stop)
                 binding.tvViewResponse.text = loadingViewModel.failureMessage
-                finish()
+                loadingViewModel.returnTimer()
             }
         }
 
-        // Reinicio o timer se não houve resposta no tempo determinado
+        /**
+         * Reinicia o timer até conseguir resposta do servidor
+         */
         loadingViewModel.timerStatus.observe(this) {
             if (it) {
                 showSnackBar(getString(R.string.text_wait_timer))
@@ -126,9 +144,20 @@ class LoadingActivity : AppCompatActivity()  {
                 loadingViewModel.startTimer()
             }
         }
+
+        /**
+         * Retorno para a tela inicial
+         */
+        loadingViewModel.returnStatus.observe(this) {
+            if (it) {
+                finish()
+            }
+        }
     }
 
-    // Defino as constantes dessa etapa
+    /**
+     * Define as constantes da atividade e chama a função de login
+     */
     private fun setConstants() {
         sessionId = serverURL + SESSION_ID
         getView = serverURL + GET_QUERY
@@ -140,12 +169,15 @@ class LoadingActivity : AppCompatActivity()  {
         loginUser()
     }
 
-    // Monto a chamada de login para pegar a chave
+    /**
+     * Inicia o login do usuário
+     * @return Realiza o login do usuário ou exibe mensagem de erro
+     */
     private fun loginUser() {
         // Se por algum motivo, o usuário e senha estiverem vazis, eu volto a tela inicial
         if (userExhibitionName.isEmpty() || userConnectionCode.isEmpty()) {
-            loginFailed = getString(R.string.text_user_empty)
-            finish()
+            binding.tvViewResponse.text = getString(R.string.text_user_empty)
+            loadingViewModel.returnTimer()
         }
         val bodyData = ServiceBody(LoginUser(userExhibitionName), LoginCode(userConnectionCode), LoginConnection("S"))
         val serviceRequest = ServiceRequest("MobileLoginSP.login",bodyData)
@@ -155,7 +187,9 @@ class LoadingActivity : AppCompatActivity()  {
 
     }
 
-    // Monto a chamada da view
+    /**
+     * Função que pega as informações do usuário que conectou
+     */
     private fun getUserView() {
         val serviceName = "CRUDServiceProvider.loadView"
         val viewRequestBody = ViewRequestBody("AD_VIEWUSUARIO", "", ViewFieldName(getUserQuery()), userFields)
@@ -164,7 +198,11 @@ class LoadingActivity : AppCompatActivity()  {
         loadingViewModel.getViewData(viewRequest, getView, cookie)
     }
 
-    // Exibição genérica de mensagem na tela
+    /**
+     * Exibe a mensagem enviada através de um snack bar
+     * @param message Mensagem que vai ser exibida no snack bar
+     * @return Exibe mensagem em tela
+     */
     private fun showSnackBar(message: String) {
         loadingViewModel.timerJob?.cancel()
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()

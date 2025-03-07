@@ -19,7 +19,9 @@ class SettingsActivity: AppCompatActivity() {
 
     }
 
-    // Retorna a tela anterior
+    /**
+     * Insere os observadores de botões, gestos e ações de tela
+     */
     private fun insertListeners() {
         binding.ibSettingsBack.setOnClickListener {
             finish()

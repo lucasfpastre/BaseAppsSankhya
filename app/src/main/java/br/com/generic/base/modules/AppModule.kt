@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+// Modulo do retrofit para injeção dos bancos de dados
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {

@@ -44,13 +44,20 @@ class LoadingViewModel @Inject constructor(private val requestRepo : RequestRepo
     val connectionStatusDown = MutableLiveData(false)
     val timerStatus = MutableLiveData(false)
     val startApplication = MutableLiveData(false)
+    val returnStatus = MutableLiveData(false)
     var responseData : String = ""
     var failureMessage : String = ""
     var viewData : String = ""
     var cookieList : List<String?> = ArrayList()
     var timerJob: Job? = null
+    var returnJob: Job? = null
 
-    // Requisição de Login
+    /**
+     * Função que faz o login do usuário quando ele desconecta
+     * @param serviceRequest Classe com as informações necessárias
+     * @param newUrl Url personalizada para realizar o login
+     * @return Retorna sucesso ou falha a depender do retorno do servidor
+     */
     fun getSessionId(serviceRequest: ServiceRequest, newUrl: String) {
         requestRepo.remote.getSessionId(serviceRequest, newUrl).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
@@ -77,7 +84,13 @@ class LoadingViewModel @Inject constructor(private val requestRepo : RequestRepo
         })
     }
 
-    // Requisição de View - Como pode voltar mais de um dado no json, verifico com um contador para saber qual classe utilizar
+    /**
+     * Função utilizada para retornar a view de acordo com os parâmetros passados
+     * @param viewRequest Classe com as informações usadas para requisitar a view desejada
+     * @param newUrl Url personalizada para chamada de view
+     * @param cookie Chave de acesso que permite fazer as requisições ao servidor
+     * @return Retorna a lista com os dados solicitados
+     */
     fun getViewData(viewRequest: ViewRequest, newUrl: String, cookie: String) {
         requestRepo.remote.getViewData(viewRequest, newUrl, cookie).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
@@ -116,11 +129,24 @@ class LoadingViewModel @Inject constructor(private val requestRepo : RequestRepo
         })
     }
 
-    // Timer para verificar tempo de resposta, roda a cada 15 segundos para dizer pro usuário que a função ainda está executando
+    /**
+     * Timer para verificar tempo de resposta, roda a cada 15 segundos para dizer pro usuário que a função ainda está executando
+     */
     fun startTimer() {
         timerJob = viewModelScope.launch {
             delay(15000) // Cada 1000 equivale a 1 segundo
             timerStatus.value = true
+        }
+    }
+
+    /**
+     * Timer para voltar para a tela inicial
+     */
+    fun returnTimer() {
+        returnJob?.cancel()
+        returnJob = viewModelScope.launch {
+            delay(5000)
+            returnStatus.value = true
         }
     }
 

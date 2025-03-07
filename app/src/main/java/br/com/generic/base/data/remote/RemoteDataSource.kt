@@ -6,6 +6,7 @@ import br.com.generic.base.models.view.request.ViewRequest
 import retrofit2.Call
 import javax.inject.Inject
 
+// Disponibiliza as funções para serem usadas via API
 class RemoteDataSource @Inject constructor(private val sankhyaApi: SankhyaApi) {
 
     fun getSessionId(serviceRequest: ServiceRequest, newUrl: String) : Call<Any> {
